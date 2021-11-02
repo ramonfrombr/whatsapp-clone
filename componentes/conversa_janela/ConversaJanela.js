@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import styled from "styled-components";
 
@@ -20,15 +20,14 @@ import MicIcon from "@material-ui/icons/Mic";
 import firebase from "firebase";
 import selecionarEmailDestinatario from "../../biblioteca/selecionarEmailDestinatario";
 
-function ConversaJanela({ conversa, mensagens }) {
-	console.log("Conversa");
-	console.log(conversa);
-	console.log("Mensagens");
-	console.log(mensagens);
+import TimeAgo from "timeago-react";
 
+function ConversaJanela({ conversa, mensagens }) {
 	const [usuario] = useAuthState(autenticacao);
 
 	const [input, definirInput] = useState("");
+
+	const referenciaFimDaMensagem = useRef(null);
 
 	const router = useRouter();
 
@@ -38,6 +37,16 @@ function ConversaJanela({ conversa, mensagens }) {
 			.doc(router.query.id)
 			.collection("mensagens")
 			.orderBy("data_criacao", "asc")
+	);
+
+	const [destinatarioSnapshot] = useCollection(
+		banco_de_dados
+			.collection("usuarios")
+			.where(
+				"email",
+				"==",
+				selecionarEmailDestinatario(conversa.usuarios, usuario)
+			)
 	);
 
 	const exibirMensagens = () => {
@@ -63,10 +72,15 @@ function ConversaJanela({ conversa, mensagens }) {
 		}
 	};
 
+	const scrollParaBaixo = () => {
+		referenciaFimDaMensagem.current.scrollIntoView({
+			behavior: "smooth",
+			black: "start",
+		});
+	};
+
 	const enviarMensagem = (e) => {
 		e.preventDefault();
-
-		console.log("Função enviar mensagem chamada.");
 
 		// Atualiza  o dado 'último visto' do usuário
 		banco_de_dados.collection("usuarios").doc(usuario.uid).set(
@@ -89,8 +103,10 @@ function ConversaJanela({ conversa, mensagens }) {
 
 		definirInput("");
 
-		console.log("Função enviar mensagem finalizada.");
+		scrollParaBaixo();
 	};
+
+	const destinatario = destinatarioSnapshot?.docs?.[0]?.data();
 
 	const emailDestinatario = selecionarEmailDestinatario(
 		conversa.usuarios,
@@ -100,11 +116,27 @@ function ConversaJanela({ conversa, mensagens }) {
 	return (
 		<Container>
 			<Cabecalho>
-				<Avatar />
+				{destinatario ? (
+					<Avatar src={destinatario?.fotoURL} />
+				) : (
+					<Avatar>{emailDestinatario[0]}</Avatar>
+				)}
 
 				<InformacaoCabecalho>
 					<h3>{emailDestinatario}</h3>
-					<p>Last seen ...</p>
+
+					{destinatarioSnapshot ? (
+						<p>
+							Last active:{" "}
+							{destinatario?.ultimaVisita?.toDate() ? (
+								<TimeAgo datetime={destinatario?.ultimaVisita?.toDate()} />
+							) : (
+								"Unavailable"
+							)}
+						</p>
+					) : (
+						<p>Loading Last active...</p>
+					)}
 				</InformacaoCabecalho>
 
 				<IconesCabecalho>
@@ -119,7 +151,7 @@ function ConversaJanela({ conversa, mensagens }) {
 
 			<MensagensContainer>
 				{exibirMensagens()}
-				<FimDaMensagem />
+				<FimDaMensagem ref={referenciaFimDaMensagem} />
 			</MensagensContainer>
 
 			<InputContainer>
@@ -174,7 +206,9 @@ const MensagensContainer = styled.div`
 	min-height: 90vh;
 `;
 
-const FimDaMensagem = styled.div``;
+const FimDaMensagem = styled.div`
+	margin-bottom: 50px;
+`;
 
 const InputContainer = styled.form`
 	display: flex;

@@ -24,12 +24,10 @@ function Conversa({ id, usuarios }) {
 
 	const destinatarioEmail = selecionarEmailDestinatario(usuarios, usuario);
 
-	console.log("Destinatário: " + destinatario);
-
 	return (
 		<Container onClick={entrarConversa}>
 			{destinatario ? (
-				<AvatarUsuario src={destinatario?.photoURL} />
+				<AvatarUsuario src={destinatario?.fotoURL} />
 			) : (
 				<AvatarUsuario>{destinatarioEmail[0]}</AvatarUsuario>
 			)}

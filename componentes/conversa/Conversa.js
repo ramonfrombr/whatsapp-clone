@@ -24,7 +24,7 @@ function Conversa({ id, usuarios }) {
 
 	const destinatarioEmail = selecionarEmailDestinatario(usuarios, usuario);
 
-	console.log(destinatario);
+	console.log("Destinatário: " + destinatario);
 
 	return (
 		<Container onClick={entrarConversa}>

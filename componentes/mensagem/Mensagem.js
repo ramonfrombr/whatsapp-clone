@@ -1,9 +1,9 @@
 import { Container } from "./MensagemElementos";
 
-function Mensagem(usuario, mensagem) {
+function Mensagem({ usuario, mensagem }) {
 	return (
 		<Container>
-			<p>{mensagem}</p>
+			<p>{mensagem.mensagem}</p>
 		</Container>
 	);
 }

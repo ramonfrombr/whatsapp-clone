@@ -9,6 +9,9 @@ import selecionarEmailDestinatario from "../../biblioteca/selecionarEmailDestina
 function Conversa({ conversa, mensagens }) {
 	const [usuario] = useAuthState(autenticacao);
 
+	console.log(conversa);
+	console.log(mensagens);
+
 	return (
 		<Container>
 			<Head>
@@ -36,7 +39,7 @@ export async function getServerSideProps(context) {
 	// Preparar as mensagens no servidor
 	const respostaMensagens = await referencia
 		.collection("mensagens")
-		.orderBy("data_envio", "asc")
+		.orderBy("data_criacao", "asc")
 		.get();
 
 	const mensagens = respostaMensagens.docs
@@ -46,7 +49,7 @@ export async function getServerSideProps(context) {
 		}))
 		.map((mensagens) => ({
 			...mensagens,
-			data_envio: mensagens.data_envio.toDate().getTime(),
+			data_criacao: mensagens.data_criacao.toDate().getTime(),
 		}));
 
 	// Preparar os chats
